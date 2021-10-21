@@ -1,11 +1,3 @@
-"""
-pytorch models.
-installation for CUDA 10.0:
-1. pip install https://download.pytorch.org/whl/cu100/torch-1.1.0-cp37-cp37m-win_amd64.whl
-2. pip install pip install https://download.pytorch.org/whl/cu100/torchvision-0.3.0-cp37-cp37m-win_amd64.whl
-3. pip install segmentation-models-pytorch
-4. pip install torchsummary
-"""
 import os
 import torch
 from typing import Optional, Union, List
@@ -13,7 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 from segmentation_models_pytorch.encoders.densenet import densenet_encoders
-from torch.autograd import Variable
+
 import numpy as np
 encoders = {}
 encoders.update(densenet_encoders)
@@ -224,5 +216,76 @@ class CombinedModel(ClassificationModel):
 
         return encoder
 
+
+
+class CombinedActivations(ClassificationModel):
+    def __init__(self,
+                 encoder_name: str = "resnet34",
+                 encoder_depth: int = 5,
+                 encoder_weights: str = "imagenet",
+                 decoder_channels: List[int] = (256, 128, 64, 32, 16),
+                 in_channels: int = 3,
+                 classes: int = 1,
+                 activation: str = 'softmax',device='cpu'):
+
+        super(CombinedActivations, self).__init__()
+
+        # encoder
+        self.encoder_base = self.get_encoder(encoder_name, in_channels=in_channels, depth=encoder_depth,
+                                             weights=encoder_weights)
+        self.encoder = self.get_encoder(encoder_name, in_channels=in_channels, depth=encoder_depth,
+                                        weights=encoder_weights)
+        #ToDo: change num_features to the exact num
+        self.classification_head = ClassificationHead(num_ftrs=1024*6*6,
+                                                      out_channels=classes)
+        self.blocks = [[],[],[],[],[],[]]
+        self.middle_layer = []
+        for i in range(len(self.blocks)):
+            w = torch.nn.Parameter(torch.tensor(np.random.normal(loc=(i-5)/2)))
+            self.register_parameter(name=f'w{i}', param=w)
+            self.middle_layer.append(w)
+
+
+    def forward(self, x):
+        enc_stages = self.encoder.get_stages()
+        base_enc_stages = self.encoder_base.get_stages()
+        features = []
+        for i in range(len(enc_stages)):
+            if i ==0:
+                continue
+            x1 = base_enc_stages[i](x)
+            x2 = enc_stages[i](x)
+            w1 = torch.sigmoid(self.middle_layer[i-1])
+            if isinstance(x1, (list, tuple)):
+                x1, skip1 = x1
+                x2, skip2 = x2
+                x = x1 * (1-w1) + x2 * w1
+                features.append(skip1)
+            else:
+                x = x1 * (1-w1) + x2 * w1
+                features.append(x)
+        output = self.classification_head(*features)
+        return output
+    def parameters_to_grad(self):
+        return [{'params':list((self.encoder.parameters())),'lr':0.001},{'params':self.middle_layer,'lr':0.1}]
+    def get_encoder(self, name, in_channels=3, depth=5, weights=None):
+        Encoder = encoders[name]["encoder"]
+        params = encoders[name]["params"]
+        params.update(depth=depth)
+        encoder = Encoder(**params)
+
+        if weights is not None:
+            if not os.path.exists(weights):
+                settings = encoders[name]["pretrained_settings"][weights]
+                encoder.load_state_dict(model_zoo.load_url(settings["url"]))
+            else:
+                state_dict = torch.load(weights, map_location='cpu')
+                state_dict["classifier.bias"] = []
+                state_dict["classifier.weight"] = []
+                encoder.load_state_dict(state_dict)
+
+        encoder.set_in_channels(in_channels)
+
+        return encoder
 
 

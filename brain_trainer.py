@@ -14,7 +14,7 @@ import pandas as pd
 from tqdm import trange, tqdm
 
 from rsna_dataset import RSNADataset
-from classification_model import classification_model,CombinedModel
+from classification_model import classification_model,CombinedModel,CombinedActivations
 
 cudnn.benchmark = True
 
@@ -30,7 +30,7 @@ class BrainHemorrhageDetection(object):
         self.images_dir = images_dir
         self.device = device
 
-        if settings.combined_net:
+        if settings.net_type == 'combined':
             self.net = CombinedModel(
                 encoder_name=self.settings.encoder_name,
                 encoder_depth=self.settings.encoder_depth,
@@ -40,7 +40,7 @@ class BrainHemorrhageDetection(object):
                 classes=self.settings.classes,
                 activation='sigmoid',device=device
             )
-        else:
+        elif settings.net_type == 'regular':
             self.net = classification_model(
                 encoder_name=self.settings.encoder_name,
                 encoder_depth=self.settings.encoder_depth,
@@ -50,6 +50,18 @@ class BrainHemorrhageDetection(object):
                 classes=self.settings.classes,
                 activation='sigmoid'
             )
+        elif settings.net_type == 'activation_com':
+            self.net = CombinedActivations(
+                encoder_name=self.settings.encoder_name,
+                encoder_depth=self.settings.encoder_depth,
+                encoder_weights=self.settings.encoder_weights,
+                decoder_channels=self.settings.decoder_channels,
+                in_channels=self.settings.n_channels,
+                classes=self.settings.classes,
+                activation='sigmoid'
+            )
+        else:
+            assert False
         self.net.to(self.device)
         self.df = pd.read_csv(csv_path)
         self.labels_dict = {
@@ -240,7 +252,7 @@ class BrainHemorrhageDetection(object):
                 running_corrects += torch.sum(preds == labels.data).item()
                 acc_cur.append(running_corrects / batch_size)
 
-                if i % 100 == 0 or i == len(dl) -1:
+                if i % 100 == 99 or i == len(dl) -1:
                     pbar.set_description(f'{descriptor} loss: {np.mean(loss_cur)} {descriptor} accuracy: {np.mean(acc_cur)} iter: {i}')
                     if is_train or i == len(dl) -1:
                         logs = {
@@ -248,7 +260,7 @@ class BrainHemorrhageDetection(object):
                             f'{descriptor} accuracy': float(np.mean(acc_cur)),
                         }
                         if self.settings.combined_net:
-                            for j in range(4):
+                            for j in range(5):
                                 logs[f'sigmoid w{j}'] =float(round(torch.sigmoid(self.net.middle_layer[j]).item(),3))
                         wandb.log(logs,step=self.step)
 

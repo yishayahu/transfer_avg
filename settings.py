@@ -67,7 +67,7 @@ class Settings(object):
         self.n_channels = settings_dict['architecture_settings']['in_channels']
         self.classes = settings_dict['architecture_settings']['n_classes']
         self.input_size = settings_dict['architecture_settings']['input_size']
-        self.combined_net = settings_dict['architecture_settings']['combined_net']
+        self.net_type = settings_dict['architecture_settings']['net_type']
 
         # training settings
         self.train_model = settings_dict['training_settings']['train_model']
