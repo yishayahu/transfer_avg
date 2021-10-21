@@ -277,7 +277,7 @@ class CombinedActivations(ClassificationModel):
 
     def forward(self, x):
         assert not self.current_middle_layer
-        self.current_middle_layer = self.middle_layer
+        self.current_middle_layer = self.middle_layer.copy()
         if self.settings.layer_wise:
             self.encoder_base(x)
             features = self.encoder(x)
