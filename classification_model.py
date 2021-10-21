@@ -156,25 +156,31 @@ class CombinedModel(ClassificationModel):
         #ToDo: change num_features to the exact num
         self.classification_head = ClassificationHead(num_ftrs=1024*6*6,
                                                       out_channels=classes)
-        self.blocks = [[],[],[],[],[]]
-        for (name,p1),(name2,p2) in zip(self.encoder_base.named_parameters(),self.encoder.named_parameters()):
-            assert name == name2
-            if name in ['features.conv0.weight','features.norm0.weight','features.norm0.bias' ]:
-                self.blocks[0].append((name,p1,p2))
-            elif 'denseblock1' in name or 'transition1' in name:
-                self.blocks[1].append((name,p1,p2))
-            elif 'denseblock2' in name or 'transition2' in name:
-                self.blocks[2].append((name,p1,p2))
-            elif 'denseblock3' in name or 'transition3' in name:
-                self.blocks[3].append((name,p1,p2))
-            elif 'denseblock4' in name or name in ['features.norm5.weight','features.norm5.bias' ]:
-                self.blocks[4].append((name,p1,p2))
-            else:
-                print(name)
-                raise Exception()
+
+        if settings.layer_wise:
+            self.blocks = []
+            for (name,p1),(name2,p2) in zip(self.encoder_base.named_parameters(),self.encoder.named_parameters()):
+                self.blocks.append([(name,p1,p2)])
+        else:
+            self.blocks = [[],[],[],[],[]]
+            for (name,p1),(name2,p2) in zip(self.encoder_base.named_parameters(),self.encoder.named_parameters()):
+                assert name == name2
+                if name in ['features.conv0.weight','features.norm0.weight','features.norm0.bias' ]:
+                    self.blocks[0].append((name,p1,p2))
+                elif 'denseblock1' in name or 'transition1' in name:
+                    self.blocks[1].append((name,p1,p2))
+                elif 'denseblock2' in name or 'transition2' in name:
+                    self.blocks[2].append((name,p1,p2))
+                elif 'denseblock3' in name or 'transition3' in name:
+                    self.blocks[3].append((name,p1,p2))
+                elif 'denseblock4' in name or name in ['features.norm5.weight','features.norm5.bias' ]:
+                    self.blocks[4].append((name,p1,p2))
+                else:
+                    print(name)
+                    raise Exception()
         self.middle_layer = []
         for i in range(len(self.blocks)):
-            w = torch.nn.Parameter(torch.tensor(np.random.normal(loc=(i-5)/2)))
+            w = torch.nn.Parameter(torch.tensor(np.random.normal()))
             self.register_parameter(name=f'w{i}', param=w)
             self.middle_layer.append(w)
 

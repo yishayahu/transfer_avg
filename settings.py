@@ -69,6 +69,7 @@ class Settings(object):
         self.input_size = settings_dict['architecture_settings']['input_size']
         self.net_type = settings_dict['architecture_settings']['net_type']
         self.lr_for_middle_layer = settings_dict['architecture_settings']['lr_for_middle_layer']
+        self.layer_wise = settings_dict['architecture_settings']['layer_wise']
 
         # training settings
         self.train_model = settings_dict['training_settings']['train_model']
