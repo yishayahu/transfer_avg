@@ -98,7 +98,7 @@ class BrainHemorrhageDetection(object):
             self.step = state_dict['step']
             # support resume wandb graph easily
             wandb.init(
-                project="electra_gan",
+                project="transfer_avg",
                 id=state_dict['run_id'],
                 resume=state_dict['run_id'],
                 settings=wandb.Settings(start_method="fork"),
@@ -106,7 +106,7 @@ class BrainHemorrhageDetection(object):
             )
         else:
             wandb.init(
-                project="electra_gan",
+                project="transfer_avg",
                 settings=wandb.Settings(start_method="fork"),
                 name=settings.exp,
             )
