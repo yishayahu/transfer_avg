@@ -118,6 +118,8 @@ class classification_model(ClassificationModel):
         features = self.encoder(x)
         output = self.classification_head(*features)
         return output
+    def parameters_to_grad(self):
+        return self.parameters()
 
     def get_encoder(self, name, in_channels=3, depth=5, weights=None):
         Encoder = encoders[name]["encoder"]
