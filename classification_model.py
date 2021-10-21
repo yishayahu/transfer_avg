@@ -140,10 +140,10 @@ class CombinedModel(ClassificationModel):
                  decoder_channels: List[int] = (256, 128, 64, 32, 16),
                  in_channels: int = 3,
                  classes: int = 1,
-                 activation: str = 'softmax',device='cpu'):
+                 activation: str = 'softmax',device='cpu',settings=None):
 
         super(CombinedModel, self).__init__()
-
+        self.settings = settings
         # encoder
         self.encoder_base = self.get_encoder(encoder_name, in_channels=in_channels, depth=encoder_depth,
                                         weights=encoder_weights)
@@ -195,7 +195,7 @@ class CombinedModel(ClassificationModel):
         output = self.classification_head(*features)
         return output
     def parameters_to_grad(self):
-        return [{'params':list((self.encoder.parameters())),'lr':0.001},{'params':self.middle_layer,'lr':0.1}]
+        return [{'params':list((self.encoder.parameters())),'lr':self.settings.initial_learning_rate},{'params':self.middle_layer,'lr':self.settings.lr_for_middle_layer}]
     def get_encoder(self, name, in_channels=3, depth=5, weights=None):
         Encoder = encoders[name]["encoder"]
         params = encoders[name]["params"]
@@ -226,10 +226,10 @@ class CombinedActivations(ClassificationModel):
                  decoder_channels: List[int] = (256, 128, 64, 32, 16),
                  in_channels: int = 3,
                  classes: int = 1,
-                 activation: str = 'softmax',device='cpu'):
+                 activation: str = 'softmax',device='cpu',settings=None):
 
         super(CombinedActivations, self).__init__()
-
+        self.settings = settings
         # encoder
         self.encoder_base = self.get_encoder(encoder_name, in_channels=in_channels, depth=encoder_depth,
                                              weights=encoder_weights)
@@ -267,7 +267,7 @@ class CombinedActivations(ClassificationModel):
         output = self.classification_head(*features)
         return output
     def parameters_to_grad(self):
-        return [{'params':list((self.encoder.parameters())),'lr':0.001},{'params':self.middle_layer,'lr':0.1}]
+        return [{'params':list((self.encoder.parameters())),'lr':self.settings.initial_learning_rate},{'params':self.middle_layer,'lr':self.settings.lr_for_middle_layer}]
     def get_encoder(self, name, in_channels=3, depth=5, weights=None):
         Encoder = encoders[name]["encoder"]
         params = encoders[name]["params"]
