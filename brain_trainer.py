@@ -261,7 +261,8 @@ class BrainHemorrhageDetection(object):
                         }
                         if self.settings.net_type != 'regular':
                             for j in range(len(self.net.middle_layer)):
-                                logs[f'sigmoid w{j}'] =float(round(torch.sigmoid(self.net.middle_layer[j]).item(),3))
+                                if not self.settings.layer_wise or j % 80 ==0:
+                                    logs[f'sigmoid w{j}'] =float(round(torch.sigmoid(self.net.middle_layer[j]).item(),3))
                         wandb.log(logs,step=self.step)
 
 
