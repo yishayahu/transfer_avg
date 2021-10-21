@@ -226,9 +226,10 @@ def store_model_activations(store_list):
     def store_hook(_, __, output):
         store_list.append(output)
     return store_hook
-def combine_model_activations(store_list,current_middle_layer):
+def combine_model_activations(store_list,middle_layer_index,middle_layer):
     def add_hook(_, __, output):
-        w1 = torch.sigmoid(current_middle_layer.pop(0))
+        w1 = torch.sigmoid(middle_layer[middle_layer_index[0]])
+        middle_layer_index[0]+=1
         output = store_list.pop(0) * (1-w1)  + (output *w1)
         return output
     return add_hook
@@ -255,7 +256,7 @@ class CombinedActivations(ClassificationModel):
         self.classification_head = ClassificationHead(num_ftrs=1024*6*6,
                                                       out_channels=classes)
         self.middle_layer = []
-        self.current_middle_layer = []
+        self.middle_layer_index = [0]
         if settings.layer_wise:
             self.store_list = []
             counter = 0
@@ -265,7 +266,7 @@ class CombinedActivations(ClassificationModel):
                     counter+=1
             for name, layer in self.encoder.named_modules():
                 if 'denselayer' in name and 'conv2' in name:
-                    layer.register_forward_hook(combine_model_activations(self.store_list,self.middle_layer))
+                    layer.register_forward_hook(combine_model_activations(self.store_list,self.middle_layer_index,self.middle_layer))
 
         else:
             counter = 5
@@ -276,8 +277,8 @@ class CombinedActivations(ClassificationModel):
 
 
     def forward(self, x):
-        assert not self.current_middle_layer
-        self.current_middle_layer = self.middle_layer.copy()
+        assert not self.store_list
+        self.middle_layer_index[0] = 0
         if self.settings.layer_wise:
             self.encoder_base(x)
             features = self.encoder(x)
