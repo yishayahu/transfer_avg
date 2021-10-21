@@ -271,13 +271,15 @@ class CombinedActivations(ClassificationModel):
         else:
             counter = 5
         for i in range(counter):
-            w = torch.nn.Parameter(torch.tensor(np.random.normal()))
+            if settings.rand:
+                w = torch.nn.Parameter(torch.tensor(np.random.normal()))
+            else:
+                w = torch.nn.Parameter(torch.tensor(0))
             self.register_parameter(name=f'w{i}', param=w)
             self.middle_layer.append(w)
 
 
     def forward(self, x):
-        assert not self.store_list
         self.middle_layer_index[0] = 0
         if self.settings.layer_wise:
             self.encoder_base(x)
