@@ -244,8 +244,9 @@ class BrainHemorrhageDetection(object):
                             f'{descriptor} loss': float(np.mean(loss_cur)),
                             f'{descriptor} accuracy': float(np.mean(acc_cur)),
                         }
-                        for j in range(4):
-                            logs[f'sigmoid w{j}'] =float(round(torch.sigmoid(self.net.middle_layer[j]).item(),3))
+                        if self.settings.combined_net:
+                            for j in range(4):
+                                logs[f'sigmoid w{j}'] =float(round(torch.sigmoid(self.net.middle_layer[j]).item(),3))
                         wandb.log(logs,step=self.step)
 
 

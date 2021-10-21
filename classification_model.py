@@ -110,7 +110,6 @@ class classification_model(ClassificationModel):
         #ToDo: change num_features to the exact num
         self.classification_head = ClassificationHead(num_ftrs=1024*6*6,
                                                       out_channels=classes)
-        self.middle_layer = []
         self.name = 'u-{}'.format(encoder_name)
         # self.initialize_classification_model()
 
