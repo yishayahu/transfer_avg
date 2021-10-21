@@ -96,20 +96,23 @@ class BrainHemorrhageDetection(object):
             self.scheduler.load_state_dict(state_dict['sched_state_dict'])
             self.net.load_state_dict(state_dict['model'])
             self.step = state_dict['step']
+            self.run_id = state_dict['run_id']
             # support resume wandb graph easily
             wandb.init(
                 project="transfer_avg",
-                id=state_dict['run_id'],
-                resume=state_dict['run_id'],
+                id=self.run_id,
+                resume=self.run_id,
                 settings=wandb.Settings(start_method="fork"),
                 name=settings.exp,
             )
         else:
+            self.run_id = wandb.util.generate_id()
             wandb.init(
-                project="transfer_avg",
-                settings=wandb.Settings(start_method="fork"),
-                name=settings.exp,
-            )
+                    project="transfer_avg",
+                    id=self.run_id,
+                    settings=wandb.Settings(start_method="fork"),
+                    name=settings.exp,
+                )
 
     def get_metadata_from_dicom(self, img_dicom):
         metadata = {
@@ -281,7 +284,7 @@ class BrainHemorrhageDetection(object):
                 "epoch": epoch,
                 "sched_state_dict": self.scheduler.state_dict(),
                 "model":self.net.state_dict(),
-                "run_id": wandb.run_id,
+                "run_id": self.run_id,
                 "step": self.step,
             }
             torch.save(state_dict,os.path.join(self.settings.checkpoint_dir, 'final_ckpt.pt'))
