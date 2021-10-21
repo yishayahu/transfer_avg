@@ -38,7 +38,7 @@ class BrainHemorrhageDetection(object):
                 decoder_channels=self.settings.decoder_channels,
                 in_channels=self.settings.n_channels,
                 classes=self.settings.classes,
-                activation='sigmoid',device=device
+                activation='sigmoid',device=device,settings=settings
             )
         elif settings.net_type == 'regular':
             self.net = classification_model(
@@ -58,7 +58,7 @@ class BrainHemorrhageDetection(object):
                 decoder_channels=self.settings.decoder_channels,
                 in_channels=self.settings.n_channels,
                 classes=self.settings.classes,
-                activation='sigmoid'
+                activation='sigmoid',settings=settings
             )
         else:
             assert False
