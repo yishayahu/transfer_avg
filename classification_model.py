@@ -183,7 +183,7 @@ class CombinedModel(ClassificationModel):
             if settings.rand:
                 w = torch.nn.Parameter(torch.tensor(np.random.normal()))
             else:
-                w = torch.nn.Parameter(torch.tensor(0))
+                w = torch.nn.Parameter(torch.tensor([0]))
             self.register_parameter(name=f'w{i}', param=w)
             self.middle_layer.append(w)
 
@@ -277,7 +277,7 @@ class CombinedActivations(ClassificationModel):
             if settings.rand:
                 w = torch.nn.Parameter(torch.tensor(np.random.normal()))
             else:
-                w = torch.nn.Parameter(torch.tensor(0))
+                w = torch.nn.Parameter(torch.zeros(1))
             self.register_parameter(name=f'w{i}', param=w)
             self.middle_layer.append(w)
 
