@@ -71,6 +71,7 @@ class Settings(object):
         self.lr_for_middle_layer = settings_dict['architecture_settings']['lr_for_middle_layer']
         self.layer_wise = settings_dict['architecture_settings']['layer_wise']
         self.rand = settings_dict['architecture_settings']['rand']
+        self.only_middle = settings_dict['architecture_settings']['only_middle']
 
         # training settings
         self.train_model = settings_dict['training_settings']['train_model']
