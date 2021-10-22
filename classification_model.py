@@ -277,7 +277,10 @@ class CombinedActivations(ClassificationModel):
             counter = 5
         for i in range(counter):
             if settings.rand:
-                w = torch.nn.Parameter(torch.tensor(np.random.normal()))
+                loc = 0
+                if not settings.layer_wise:
+                    loc = (i-5)/2
+                w = torch.nn.Parameter(torch.tensor(np.random.normal(loc)))
             else:
                 w = torch.nn.Parameter(torch.zeros(1))
             self.register_parameter(name=f'w{i}', param=w)
