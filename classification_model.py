@@ -253,7 +253,7 @@ class CombinedActivations(ClassificationModel):
         self.encoder_base = self.get_encoder(encoder_name, in_channels=in_channels, depth=encoder_depth,
                                              weights=encoder_weights)
         if settings.only_middle:
-            encoder_weights = os.path.join(self.settings.checkpoint_dir, 'unet_best_val_dice.pt')
+            encoder_weights = os.path.join('/home/dsi/shaya/results/base/checkpoint/', 'unet_best_val_dice.pt')
         self.encoder = self.get_encoder(encoder_name, in_channels=in_channels, depth=encoder_depth,
                                         weights=encoder_weights)
 
@@ -314,8 +314,8 @@ class CombinedActivations(ClassificationModel):
         output = self.classification_head(*features)
         return output
     def parameters_to_grad(self):
-        if self.settings.only_middle:
-            return [{'params':self.middle_layer,'lr':self.settings.lr_for_middle_layer}]
+        # if self.settings.only_middle:
+        #     return [{'params':self.middle_layer,'lr':self.settings.lr_for_middle_layer}]
         return [{'params':list((self.encoder.parameters())),'lr':self.settings.initial_learning_rate},{'params':self.middle_layer,'lr':self.settings.lr_for_middle_layer}]
     def get_encoder(self, name, in_channels=3, depth=5, weights=None):
         Encoder = encoders[name]["encoder"]
