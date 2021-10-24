@@ -102,7 +102,7 @@ class BrainHemorrhageDetection(object):
         self.step = 0
 
         if settings.resume:
-            state_dict = torch.load(os.path.exists(os.path.join(settings.checkpoint_dir, 'final_ckpt.pt')))
+            state_dict = torch.load(os.path.join(settings.checkpoint_dir, 'final_ckpt.pt'))
             self.optimizer.load_state_dict(state_dict['optimizer_state_dict'])
             self.start_epoch = state_dict['epoch']
             self.scheduler.load_state_dict(state_dict['sched_state_dict'])
